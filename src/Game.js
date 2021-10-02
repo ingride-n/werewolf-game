@@ -1,36 +1,12 @@
 import React, { useState, useEffect } from "react";
-import $ from "jquery";
+import { ACTORS } from "./ACTORS.js";
+
+const randomList = ACTORS.sort(() => Math.random() - 0.5).slice(0, 10);
 
 function Game() {
-  const [actors, setActors] = useState([]);
+  const [actors, setActors] = useState(randomList);
 
-  function loadActors() {
-    const now = new Date();
-    const params = $.param({ month: now.getMonth() + 1, day: now.getDate() });
-    const options = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-rapidapi-host": process.env.REACT_APP_API_HOST,
-        "x-rapidapi-key": process.env.REACT_APP_API_KEY,
-      },
-    };
-    fetch(`${process.env.REACT_APP_API_URL}/list-born-today?${params}`, options)
-      .then((res) => res.json())
-      .then((data) => {
-        setActors(
-          data.map((id) => {
-            let re = /\/name\/(\w+)\//;
-            let found = id.match(re)[1];
-            return found[1];
-          })
-        );
-      });
-  }
-
-  useEffect(() => {
-    loadActors();
-  }, []);
+  useEffect(() => {}, []);
 
   return <div></div>;
 }
