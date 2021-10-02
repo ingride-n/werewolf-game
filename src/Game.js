@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import $ from 'jquery';
-
+import $ from "jquery";
 
 function Game() {
   const [actors, setActors] = useState([]);
 
-  useEffect(() => {
-    const params = $.param({ month: "2", day: "28" });
+  function loadActors() {
+    const now = new Date();
+    const params = $.param({ month: now.getMonth() + 1, day: now.getDate() });
     const options = {
       method: "GET",
       headers: {
@@ -18,12 +18,18 @@ function Game() {
     fetch(`${process.env.REACT_APP_API_URL}/list-born-today?${params}`, options)
       .then((res) => res.json())
       .then((data) => {
-          setActors(data.map(id => {
-              let re = /\/name\/(\w+)\//;
-              let found = id.match(re)[1];
-              return found[1];
-          }))
+        setActors(
+          data.map((id) => {
+            let re = /\/name\/(\w+)\//;
+            let found = id.match(re)[1];
+            return found[1];
+          })
+        );
       });
+  }
+
+  useEffect(() => {
+    loadActors();
   }, []);
 
   return <div></div>;
