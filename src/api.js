@@ -1,56 +1,66 @@
-
-import $ from "jquery";
-
-
-// TODO: store data from Rapid API in a cache module
-
-const defaultOptions = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "x-rapidapi-host": process.env.REACT_APP_API_HOST,
-      "x-rapidapi-key": process.env.REACT_APP_API_KEY,
-    },
-  };
+const options = {
+  method: "GET",
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
 
 async function loadActors() {
-    const now = new Date();
-    const params = $.param({ month: now.getMonth() + 1, day: now.getDate() });
-    const res = await fetch(
-      `${process.env.REACT_APP_API_URL}/list-born-today?${params}`,
-      defaultOptions
+  const url = `https://api.themoviedb.org/3/person/popular?api_key=${process.env.REACT_APP_API_KEY}`;
+
+  let randomPage = await fetch(url)
+    .then((res) => res.json())
+    .then((data) => Math.floor(Math.random() * data.total_pages));
+
+  const data = await fetch(`${url}&page=${randomPage}`)
+    .then((res) => res.json())
+    .then((data) =>
+      data.results.map((person) => ({ id: person.id, name: person.name }))
     );
-    const data = await res.json();
-    const randomizedData = data
-      .map((id) => {
-        let re = /\/name\/(\w+)\//;
-        let found = id.match(re)[1];
-        return { id: found, image_url: null };
-      });
 
-    const str = JSON.stringify(randomizedData);
-    console.log(str);
-    return randomizedData;
-  }
+    // console.log(data);
 
+  return data;
+}
 
-  async function loadMetadata(id) {
-    sleep()
-      .then(() =>
-        fetch(
-          `${process.env.REACT_APP_API_URL}/get-all-images?nconst=${id}`,
-          defaultOptions
-        )
-      )
-      .then((res) => res.json())
-      .then((data) => {
-        array.push({
-          ...actor,
-          image_url: data.resource.images[0].url,
-        });
-      });
-  }
+async function getImages(id) {
+  const images = await fetch(
+    `https://api.themoviedb.org/3/person/${id}/images?api_key=${process.env.REACT_APP_API_KEY}`,
+    options
+  )
+    .then((res) => res.json())
+    .then((data) => data.profiles.map((p) => p.file_path));
 
-  function sleep() {
-    return new Promise((resolve) => setTimeout(resolve(), 2000));
-  }
+  return images;
+}
+
+async function getDetails(id) {
+  const details = await fetch(
+    `https://api.themoviedb.org/3/person/${id}?api_key=${process.env.REACT_APP_API_KEY}`,
+    options
+  )
+    .then((res) => res.json())
+    .then((data) => ({
+      birthday: data.birthday,
+      bio: data.biography,
+      gender: data.gender,
+      origin: data.place_of_birth,
+      isAdult: data.adult,
+    }));
+
+  return details;
+}
+
+async function loadMetadata(actorId) {
+  // console.log(actorId);
+  const [images, details] = await Promise.all([
+    getImages(actorId),
+    getDetails(actorId),
+  ]);
+
+  // console.log(images, details);
+
+  return {...details, image_urls: images};
+}
+
+export { loadActors, loadMetadata };
