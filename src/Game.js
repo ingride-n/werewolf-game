@@ -17,8 +17,12 @@ function Game() {
     };
     fetch(`${process.env.REACT_APP_API_URL}/list-born-today?${params}`, options)
       .then((res) => res.json())
-      .then((json) => {
-          setActors(json)
+      .then((data) => {
+          setActors(data.map(id => {
+              let re = /\/name\/(\w+)\//;
+              let found = id.match(re)[1];
+              return found[1];
+          }))
       });
   }, []);
 
