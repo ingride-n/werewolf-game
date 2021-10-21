@@ -1,4 +1,5 @@
 # werewolf-game
+
 A single-player guessing game using actors from The Movie Database (TMDB) API
 
 ### Getting Started
